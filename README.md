@@ -18,6 +18,6 @@ UI 基于 bootstrap charisma http://usman.it/themes/charisma/index.html
 数据结构
 
 ![image](https://raw.githubusercontent.com/roytian1217/rt-mag/master/rt-mag/src/main/webapp/resource/images/readme/datastructure1.png)
-![image](https://raw.githubusercontent.com/roytian1217/rt-mag/master/rt-mag/src/main/webapp/resource/images/readme/datastructure2.png)
+![image](https://raw.githubusercontent.com/roytian1217/rt-mag/master/rt-mag/src/main/webapp/resource/images/readme/datastructure3.png)
 
 联系方式：QQ 373119611
