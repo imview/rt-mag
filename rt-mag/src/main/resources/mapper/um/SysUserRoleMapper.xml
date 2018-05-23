@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rt.dao.mapper.um.SysUserRoleMapper">
+
+    <select id="selectRoleByUserId" parameterType="Map" resultType="com.rt.dto.um.SysUserRoleMapDTO">
+        <![CDATA[
+            select * from (
+                select   @rownum :=@rownum+1 as rows ,r.id ,r.`name`, u.id  userId
+                  from (select @rownum :=0  ) c  , sys_role r
+                  LEFT join sys_user_role ur on r.id  = ur.role_id   and ur.is_delete=0
+                  LEFT join sys_user u on u.id = ur.user_id  and u.id = #{userId}
+                  where r.is_delete = 0 and (r.id in (
+                      select distinct role_id from sys_user_role ur2 where ur2.user_id = #{curUserId}
+                )or 1= #{isSuperAdmin} )
+              order by userId desc
+              ) t group by id,name
+        ]]>
+    </select>
+    
+    <update id="deleteUserRoleByUserId" parameterType="Map">
+        <![CDATA[
+            UPDATE sys_user_role set is_delete = 1 ,last_update_user_id = #{curUserId},last_update_user_name = #{curUserName},
+            last_update_time = CURRENT_TIME
+            WHERE user_id = #{userId}
+        ]]>
+    </update>
+
+    <insert id="addUserRoleList" parameterType="com.rt.dto.um.SysUserRoleDTO">
+        <foreach collection="userRoleList" item="item" separator=";">
+          INSERT INTO sys_user_role (id,user_id,role_id,is_delete,create_user_id,create_user_name,create_time)
+          VALUES
+            (#{item.id},#{item.userId},#{item.roleId},0,#{createUserId},#{createUserName},CURRENT_TIME)
+        </foreach>
+    </insert>
+
+    <insert id="addUserRole" parameterType="com.rt.dto.um.SysUserRoleDTO">
+            INSERT INTO sys_user_role (id,user_id,role_id,is_delete,create_user_id,create_user_name,create_time)
+            VALUES
+            (#{id},#{userId},#{roleId},0,#{createUserId},#{createUserName},CURRENT_TIME)
+    </insert>
+
+    <select id="selectByUserIdOrRoleId" parameterType="Map" resultType="com.rt.dto.um.SysUserRoleDTO">
+        <![CDATA[
+            SELECT * FROM sys_user_role where is_delete = 0
+        ]]>
+        <if test="userId != '-1' and @com.rt.util.StringUtil@isNotBlank(userId)">
+            AND user_id = #{userId}
+        </if>
+        <if test="roleId != '-1' and @com.rt.util.StringUtil@isNotBlank(roleId)">
+            AND role_id = #{roleId}
+        </if>
+        ORDER BY id ASC
+    </select>
+
+    <select id="getUserCountByRoIds" parameterType="Map" resultType="Integer">
+        select count(*)  from sys_user u
+        INNER join sys_user_role ur on u.id = ur.user_id and ur.is_delete = 0
+        AND  ur.role_id in
+        <foreach collection = "idList" index = "index" item = "item" open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+        WHERE u.is_delete = 0
+    </select>
+
+</mapper>

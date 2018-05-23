@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rt.dao.mapper.um.SysRoleOperationMapper">
+
+    <select id="getAllOperationList" resultType="com.rt.dto.um.SysOperationDTO">
+        <![CDATA[
+              SELECT * FROM sys_operation WHERE is_delete = 0 order by sequence
+        ]]>
+    </select>
+
+    <select id="getOperationListByRole" resultType="com.rt.dto.um.SysOperationDTO" parameterType="String">
+        <![CDATA[
+            select 	 op.id,op.`name`, op.url, op.parent_id, op.sequence,
+				 op.type, op.enabled, op.icon ,op.`code`, op.is_delete,op.create_user_id, op.create_user_name,op.create_time,
+				 op.last_update_user_id,op.last_update_user_name,op.last_update_time
+				 from sys_operation op
+				 join sys_role_operation rpo on rpo.operation_id = op.id
+				 where rpo.role_id = #{roleId}  and op.is_delete = 0  and enabled = 1
+				 order by op.sequence
+        ]]>
+    </select>
+
+    <insert id="addRoleOperation" parameterType="com.rt.dto.um.SysRoleOperationDTO">
+        <![CDATA[
+              INSERT INTO sys_role_operation (id,role_id,operation_id,is_delete,create_user_id,create_user_name,create_time)
+              VALUES (#{id},#{roleId},#{operationId},#{isDelete},#{createUserId},#{createUserName},CURRENT_TIME )
+        ]]>
+    </insert>
+
+    <update id="updateRoleOperation" parameterType="com.rt.dto.um.SysRoleOperationDTO">
+        <![CDATA[
+              UPDATE  sys_role_operation SET is_delete = #{isDelete},last_update_user_id = #{lastUpdateUserId},
+              last_update_user_name = #{lastUpdateUserName},last_update_time = CURRENT_TIME
+              WHERE id = #{id}
+        ]]>
+    </update>
+
+    <update id="updateRoleOperationByIdList" parameterType="Map">
+        <![CDATA[
+              UPDATE  sys_role_operation SET is_delete = 0 ,last_update_user_id = #{curUserId},
+              last_update_user_name = #{curUserName},last_update_time = CURRENT_TIME
+              WHERE role_id = #{roleId}
+              AND operation_id IN
+        ]]>
+        <foreach collection = "idList" index = "index" item = "item" open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="deleteRoleOperationByRoleId" parameterType="Map">
+        <![CDATA[
+              UPDATE  sys_role_operation SET is_delete = 1 ,last_update_user_id = #{curUserId},
+              last_update_user_name = #{curUserName},last_update_time = CURRENT_TIME
+              WHERE role_id = #{roleId}
+        ]]>
+    </update>
+    
+    <select id="selectOperationListByRoleId" parameterType="String" resultType="com.rt.dto.um.UserFindRoleOperationDTO">
+        <![CDATA[
+            SELECT @rownum := @rownum+1 as rows ,
+				p.id, p.name , p.parent_id, p.sequence ,rp.role_id as hasrole
+				FROM (select @rownum :=0  ) c  ,`sys_operation` p
+				LEFT JOIN `sys_role_operation` rp ON rp.operation_id = p.id
+				AND rp.is_delete = 0
+				AND rp.role_id = #{roleId}
+            WHERE p.enabled = 1  and  p.is_delete=0
+        ]]>
+    </select>
+
+
+</mapper>

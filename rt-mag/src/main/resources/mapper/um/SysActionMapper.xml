@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rt.dao.mapper.um.SysActionMapper">
+
+    <sql id="where_getActionList">
+        where is_delete=0
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.name)">
+            and `name` like concat('%',#{conditions.name},'%')
+        </if>
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.url)">
+            and url like concat('%',#{conditions.url},'%')
+        </if>
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.namespace)">
+            and namespace like concat('%',#{conditions.namespace},'%')
+        </if>
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.controllerName)">
+            and controller_name like concat('%',#{conditions.controllerName},'%')
+        </if>
+    </sql>
+
+    <select id="getActionList" parameterType="com.rt.util.Pagination" resultType="com.rt.dto.um.SysActionDTO">
+        select *
+        from sys_action
+        <include refid="where_getActionList"></include>
+        order by namespace,controller_name
+        limit #{offset},#{pageSize}
+    </select>
+
+    <select id="getActionListCount" parameterType="com.rt.util.Pagination" resultType="Integer">
+        select count(1)
+        from sys_action
+        <include refid="where_getActionList"></include>
+    </select>
+
+    <update id="deleteAction" parameterType="java.util.Map">
+        update sys_action set is_delete=1,last_update_user_id=#{curUserId},last_update_user_name=#{curUserName},last_update_time=now() where id in
+        <foreach collection = "idList" index = "index" item = "item" open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+    </update>
+
+</mapper>

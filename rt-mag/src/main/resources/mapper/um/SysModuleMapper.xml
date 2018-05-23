@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rt.dao.mapper.um.SysModuleMapper">
+
+    <sql id="moduleListPageSQL">
+        <![CDATA[
+            FROM sys_operation o WHERE o.is_delete = 0 and o.`type` = 1 and o.parent_id IS NULL and o.level = 1
+            ORDER BY o.sequence
+        ]]>
+    </sql>
+
+    <select id="getModuleList" resultType="com.rt.dto.um.SysOperationDTO" parameterType="Map">
+        <![CDATA[
+            SELECT  *
+        ]]>
+        <include refid="moduleListPageSQL"></include>
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="getModuleListCount" resultType="Integer" >
+        <![CDATA[
+            SELECT COUNT(*)
+        ]]>
+        <include refid="moduleListPageSQL"></include>
+    </select>
+
+    <select id="getModuleById" parameterType="String" resultType="com.rt.dto.um.SysOperationDTO">
+        SELECT  *  FROM  sys_operation WHERE id = #{operationId}
+    </select>
+
+    <insert id="addModule" parameterType="com.rt.dto.um.SysOperationDTO">
+        INSERT INTO sys_operation (id,`name`,url,parent_id,sequence,`type`,enabled,`level`,code,icon,remark,is_delete,
+        create_user_id,create_user_name,create_time)VALUES
+        (#{id},#{name},#{url},#{parentId},#{sequence},#{type},#{enabled},#{level},,#{code},,#{icon},#{remark},,#{isDelete},
+        #{createUserId},#{createUserName},CURRENT_TIME )
+    </insert>
+
+    <update id="updateModule" parameterType="com.rt.dto.um.SysOperationDTO">
+        UPDATE sys_operation SET `name`= #{name},`url`= #{url},`parent_id`= #{parentId},`sequence`= #{sequence},`type`= #{type},
+        `enabled`= #{enabled},`level`= #{level},`code`= #{code},`icon`= #{icon},`remark`= #{remark},`is_delete`= #{isDelete},
+        `last_update_user_id`= #{lastUpdateUserId},`last_update_user_name`= #{lastUpdateUserName},`last_update_time`= CURRENT_TIME
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteModule" parameterType="Map">
+        <![CDATA[
+            UPDATE sys_operation SET is_delete = 1,last_update_user_id = #{curUserId,jdbcType=VARCHAR},
+            last_update_user_name = #{curUserName,jdbcType=VARCHAR},last_update_time = CURRENT_TIME
+            WHERE id in
+        ]]>
+        <foreach collection = "idList" index = "index" item = "item" open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getModule" resultType="com.rt.util.NameValue">
+        <![CDATA[
+            SELECT id as `value`,`name` as `text` FROM sys_operation
+            WHERE enabled = 1 and is_delete = 0 and `type` = 1 and `level` = 1 and parent_id IS NULL
+        ]]>
+    </select>
+
+</mapper>

@@ -1,0 +1,1 @@
+<%@ tag pageEncoding="utf-8"%><%@ taglib prefix="c" uri="http://java.sun.com/jstl/core_rt"%><%@ attribute name="url" type="String" required="true" rtexprvalue="true"%><c:if test="${ url != ''}"><script type="text/javascript" src="<c:url value='${url}'/>?v=${__version}"></script></c:if>

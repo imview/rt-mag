@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rt.dao.mapper.um.SysCategoryMapper">
+
+    <sql id="categoryPageListSQL">
+        <![CDATA[
+            FROM sys_operation sp
+            INNER JOIN sys_operation `module` ON sp.parent_id = `module`.id AND `module`.`level`=1 AND `module`.type=1
+                        AND `module`.is_delete = 0 AND `module`.parent_id IS NULL
+            WHERE sp.is_delete = 0 and sp.`level` = 2 and sp.`type` = 1
+        ]]>
+
+        <if test="conditions.moduleId != '-1' and  @com.rt.util.StringUtil@isNotBlank(conditions.moduleId)">
+            AND sp.`parent_id` = #{conditions.moduleId}
+        </if>
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.categoryName)">
+            AND sp.`name` LIKE CONCAT('%',#{conditions.categoryName},'%')
+        </if>
+    </sql>
+
+    <select id="getCategoryPageList" resultType="com.rt.dto.um.SysOperationListDTO" parameterType="com.rt.util.Pagination">
+        <![CDATA[
+            SELECT sp.id,sp.`name`,sp.url,sp.parent_id,`module`.`name` AS parent_name,sp.sequence,sp.`type`,
+                sp.enabled,sp.icon,sp.code,sp.`level`,sp.create_user_id,sp.create_user_name,sp.create_time,
+                sp.last_update_user_id,sp.last_update_user_name,sp.last_update_time
+        ]]>
+        <include refid="categoryPageListSQL"></include>
+        <![CDATA[
+            ORDER BY  sp.parent_id,sequence ASC LIMIT #{offset},#{pageSize}
+        ]]>
+    </select>
+
+    <select id="getCategoryPageListCount" parameterType="com.rt.util.Pagination" resultType="Integer">
+        <![CDATA[
+            SELECT count(*)
+        ]]>
+        <include refid="categoryPageListSQL"></include>
+    </select>
+
+    <insert id="addCategory" parameterType="com.rt.dto.um.SysOperationDTO">
+        INSERT INTO sys_operation (id,`name`,url,parent_id,sequence,`type`,enabled,`level`,code,icon,remark,is_delete,
+        create_user_id,create_user_name,create_time)VALUES
+        (#{id},#{name},#{url},#{parentId},#{sequence},#{type},#{enabled},#{level},,#{code},,#{icon},#{remark},,#{isDelete},
+        #{createUserId},#{createUserName},CURRENT_TIME )
+    </insert>
+
+    <update id="updateCategory" parameterType="com.rt.dto.um.SysOperationDTO">
+         UPDATE sys_operation SET `name`= #{name},`parent_id`= #{parentId},sequence=#{sequence},enabled = #{enabled},
+         url=#{url},icon=#{icon},
+        `last_update_user_id`= #{lastUpdateUserId},`last_update_user_name`= #{lastUpdateUserName},`last_update_time`= CURRENT_TIME
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteCategory" parameterType="Map">
+        <![CDATA[
+            UPDATE sys_operation SET is_delete = 1,last_update_user_id = #{curUserId,jdbcType=VARCHAR},
+            last_update_user_name = #{curUserName,jdbcType=VARCHAR},last_update_time = CURRENT_TIME
+            WHERE id in
+        ]]>
+        <foreach collection = "idList" index = "index" item = "item" open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+    </update>
+
+    <!--<select id="getCategoryMaxSequence" parameterType="String" resultType="Integer">-->
+        <!--<![CDATA[-->
+            <!--SELECT sequence FROM sys_operation WHERE parent_id = #{moduleId} AND is_delete = 0 ORDER BY sequence DESC-->
+            <!--LIMIT 0,1-->
+        <!--]]>-->
+    <!--</select>-->
+
+    <select id="getCategoryById" parameterType="String" resultType="com.rt.dto.um.SysOperationDTO">
+        <![CDATA[
+            SELECT * FROM sys_operation WHERE id = #{categoryId}
+        ]]>
+    </select>
+
+    <update id="updateCategorySequence" parameterType="Map">
+        <![CDATA[
+            update sys_operation SET  sequence = #{sequence} WHERE id = #{categoryId}
+        ]]>
+    </update>
+
+    <select id="getMaxSequenceByModuleId" parameterType="String" resultType="Integer">
+         <![CDATA[
+            SELECT MAX(sequence) as max_sequence FROM sys_operation WHERE is_delete = 0 AND parent_id = #{moduleId}
+        ]]>
+    </select>
+
+    <select id="getMinSequenceByModuleId" parameterType="String" resultType="Integer">
+        <![CDATA[
+            SELECT MIN(sequence) as max_sequence FROM sys_operation WHERE is_delete = 0 AND parent_id = #{moduleId}
+        ]]>
+    </select>
+
+    <select id="getNextSequenceCategory" parameterType="Map" resultType="com.rt.dto.um.SysOperationDTO">
+        <![CDATA[
+            SELECT * FROM sys_operation WHERE parent_id = #{moduleId} AND is_delete = 0
+        ]]>
+        <choose>
+            <!-- 定义moveType ：true 表示moveUp;;; false 表示 moveDown -->
+            <when test="moveType">
+                <![CDATA[
+                  AND sequence < #{curSequence}
+                  ORDER by sequence DESC LIMIT 0,1
+                ]]>
+            </when>
+            <otherwise>
+                <![CDATA[
+                    AND sequence >  #{curSequence}
+                    ORDER by sequence ASC LIMIT 0,1
+                ]]>
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getCountMenuOrCategoryByIds" parameterType="List" resultType="Integer">
+         <![CDATA[
+            SELECT count(*) FROM sys_operation WHERE is_delete = 0 AND enabled = 1
+            AND parent_id IN
+        ]]>
+        <foreach collection = "idList" index = "index" item = "item" open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+
+    </select>
+
+    <!--***************************   Menu  *********************************************-->
+    <select id="getMenuPageList" parameterType="String" resultType="com.rt.dto.um.SysOperationDTO">
+        <![CDATA[
+            SELECT sp.id,sp.`name`,sp.url,sp.parent_id,sp.sequence,sp.`type`,sp.enabled,sp.icon,sp.icon,sp.`code`,
+                sp.`level`
+            FROM sys_operation sp WHERE sp.is_delete = 0 and sp.`type`= 1 and sp.parent_id = #{categoryId}
+            ORDER BY sequence ASC
+        ]]>
+    </select>
+
+    <select id="getCategorys" resultType="com.rt.util.NameValue" parameterType="String">
+        <![CDATA[
+            SELECT id AS `value`,`name` AS `text`
+            FROM sys_operation WHERE enabled = 1 and is_delete = 0 AND `type` = 1 AND parent_id = #{moduleId}
+            ORDER BY sequence DESC
+        ]]>
+    </select>
+
+    <select id="getAllAction" resultType="com.rt.util.NameValue">
+        <![CDATA[
+            SELECT concat(`name`,'(',url,')') as text ,
+                id AS `value`
+            FROM sys_action
+            WHERE is_delete = 0 ORDER BY namespace,`name`
+        ]]>
+    </select>
+
+    <select id="getOperationActionList" resultType="com.rt.util.NameValue" parameterType="String">
+        <![CDATA[
+            SELECT concat(`name`,'(',url,')') as text ,action_id AS `value`
+            FROM sys_action a
+            INNER JOIN sys_operation_action p ON a.id = p.action_id AND p.is_delete = 0
+            WHERE a.is_delete = 0 AND p.operation_id = #{operationId}
+            ORDER BY namespace,`name`
+        ]]>
+    </select>
+
+    <insert id="insertOperationAction" parameterType="com.rt.dto.um.SysOperationActionDTO">
+        INSERT INTO sys_operation_action(id,operation_id,action_id,is_delete,create_user_id,create_user_name,create_time)
+        VALUES (#{id},#{operationId},#{actionId},0,#{createUserId},#{createUserName},CURRENT_TIME )
+    </insert>
+
+    <update id="deleteOperationAction" parameterType="Map">
+        <![CDATA[
+            UPDATE sys_operation_action SET is_delete = 1 ,last_update_user_id = #{curUserId},
+                last_update_user_name = #{curUserName},last_update_time = CURRENT_TIME
+            WHERE operation_id = #{operationId}
+        ]]>
+    </update>
+
+
+</mapper>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rt.dao.mapper.um.SysOperationMapper">
+
+    <sql id="operationPageListSQL">
+        <![CDATA[
+            FROM sys_operation tmp
+            LEFT JOIN sys_operation menu ON tmp.parent_id = menu.id
+            LEFT JOIN sys_operation category ON menu.parent_id = category.id
+            LEFT JOIN sys_operation `module` ON category.parent_id = `module`.id
+            WHERE tmp.is_delete = 0 and tmp.`level` >=4
+        ]]>
+        <if test="conditions.menuId != '-1' and  @com.rt.util.StringUtil@isNotBlank(conditions.menuId)">
+            AND menu.id = #{conditions.menuId}
+        </if>
+        <if test="conditions.categoryId !='-1' and @com.rt.util.StringUtil@isNotBlank(conditions.categoryId)">
+            AND category.id = #{conditions.categoryId}
+        </if>
+        <if test="conditions.moduleId != '-1' and @com.rt.util.StringUtil@isNotBlank(conditions.moduleId)">
+            AND `module`.id = #{conditions.moduleId}
+        </if>
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.operationName)">
+            AND tmp.`name` LIKE CONCAT('%',#{conditions.operationName},'%')
+        </if>
+    </sql>
+
+    <select id="getOperationList" resultType="com.rt.dto.um.SysOperationListDTO"
+            parameterType="com.rt.util.Pagination">
+        <![CDATA[
+            SELECT `module`.`name` AS module_name,
+              category.`name` AS category_name,
+              menu.`name` AS menu_name,
+              tmp.code,tmp.id,tmp.url,tmp.`name`,tmp.parent_id,tmp.sequence,tmp.type,tmp.enabled,tmp.icon,
+              tmp.create_user_id,tmp.create_user_name,tmp.create_time,tmp.last_update_user_id,
+              tmp.last_update_user_name,tmp.last_update_time
+        ]]>
+        <include refid="operationPageListSQL"></include>
+        <![CDATA[
+            ORDER BY  `module`.sequence,category.sequence,menu.sequence,tmp.sequence
+            LIMIT #{offset},#{pageSize}
+        ]]>
+    </select>
+
+    <select id="getOperationListCount" parameterType="com.rt.util.Pagination" resultType="Integer">
+          <![CDATA[
+            SELECT count(*)
+        ]]>
+        <include refid="operationPageListSQL"></include>
+    </select>
+
+    <insert id="addOperetion" parameterType="com.rt.dto.um.SysOperationDTO">
+        INSERT INTO sys_operation (id,`name`,url,parent_id,sequence,`type`,enabled,`level`,code,icon,remark,is_delete,
+        create_user_id,create_user_name,create_time)VALUES
+        (#{id},#{name},#{url},#{parentId},#{sequence},#{type},#{enabled},#{level},,#{code},,#{icon},#{remark},,#{isDelete},
+        #{createUserId},#{createUserName},CURRENT_TIME )
+    </insert>
+
+    <update id="updateOperation" parameterType="com.rt.dto.um.SysOperationDTO">
+        UPDATE sys_operation SET `name`= #{name},`parent_id`= #{parentId},`code`=#{code},
+        `last_update_user_id`= #{lastUpdateUserId},`last_update_user_name`= #{lastUpdateUserName},`last_update_time`= CURRENT_TIME
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteOperation" parameterType="Map">
+        <![CDATA[
+            UPDATE sys_operation SET is_delete = 1,last_update_user_id = #{curUserId,jdbcType=VARCHAR},
+            last_update_user_name = #{curUserName,jdbcType=VARCHAR},last_update_time = CURRENT_TIME
+            WHERE id in
+        ]]>
+        <foreach collection = "idList" index = "index" item = "item" open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="getChildren" parameterType="String" resultType="com.rt.util.NameValue">
+        <![CDATA[
+            SELECT id AS `value` ,`name` AS `text` FROM sys_operation
+            WHERE parent_id = #{parentId} AND is_delete = 0 AND enabled = 1
+        ]]>
+    </select>
+
+    <select id="checkOpCode" parameterType="Map" resultType="Integer">
+        <![CDATA[
+            SELECT count(*) AS rows_counts FROM sys_operation per WHERE  code = #{opCode} and id<> #{id}
+        ]]>
+    </select>
+
+    <select id="getModuleList" resultType="com.rt.util.NameValue">
+        <![CDATA[
+            SELECT id AS `value` ,`name` AS `text` FROM sys_operation
+            WHERE parent_id IS NULL and is_delete = 0 and `level` = 1 and enabled = 1
+        ]]>
+    </select>
+
+    <select id="getOperationById" parameterType="String" resultType="com.rt.dto.um.SysOperationDTO">
+         <![CDATA[
+            SELECT * FROM sys_operation
+            WHERE id = #{id}
+        ]]>
+    </select>
+
+
+</mapper>

@@ -1,0 +1,143 @@
+@charset "utf-8";
+/**全局样式**/
+html, body, div, span, applet, object, iframe, table, caption, tbody,
+	tfoot, thead, tr, th, td, del, dfn, em, font, img, ins, kbd, q, s, samp,
+	small, strike, strong, sub, sup, tt, var, h1, h2, h3, h4, h5, h6, p,
+	blockquote, pre, a, abbr, acronym, address, big, cite, code, dl, dt, dd,
+	ol, ul, li, fieldset, form, label, legend, input {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	outline: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 400
+}
+
+a, img {
+	text-decoration: none;
+	border: 0;
+	hide-focus: expression(this.hideFocus = true); /*IE6IE7*/
+}
+
+input[type="button"] {
+	font-family: "Microsoft YaHei";
+}
+
+body {
+	font-family: "Microsoft YaHei", Arial;
+	color: #666;
+	background: url(../../images/bg.jpg) no-repeat;
+	background-size: cover;
+	background-attachment: fixed; /**将背景始终保持全屏**/
+	font-size: 18px;
+	height: 100%;
+}
+
+a {
+	color: #666;
+}
+
+a:hover {
+	text-decoration: none;
+	color: #ad2224;
+}
+
+a:active {
+	text-decoration: none;
+	color: #666;
+}
+
+input[type="text"]:focus, input[type="number"]:focus, input[type="password"]:focus,
+	input[type="tel"]:focus {
+	outline: 0;
+}
+
+/**公用样式**/
+.f-left {
+	float: left;
+}
+
+.f-right {
+	float: right;
+}
+
+.clear {
+	clear: both;
+}
+
+.hide {
+	display: none
+}
+
+.yahei {
+	font-family: "Microsoft YaHei"
+}
+
+.songti {
+	font-family: "simsun"
+}
+
+.gray {
+	color: #999;
+}
+
+.red {
+	color: #ff0028;
+}
+
+.green {
+	color: #369304;
+}
+
+a.green:hover {
+	text-decoration: underline;
+}
+
+.yellow {
+	color: #ff9b2c
+}
+
+a.yellow:hover {
+	text-decoration: underline;
+}
+
+.orange {
+	color: #F60;
+}
+
+a.orange:hover {
+	text-decoration: underline;
+}
+
+.blue {
+	color: #06f;
+}
+
+a.blue:hover {
+	color: #c9322d;
+}
+
+.blue-line {
+	color: #06f;
+	text-decoration: underline;
+}
+
+.icon {
+	background-image: url(../../images/icon.png);
+	background-repeat: no-repeat;
+	background-position: -999px -999px;
+}
+
+@font-face {
+	font-family: 'ds-digitalbold';
+	src: url('../fonts/ds-digib-webfont.eot');
+	src: url('../fonts/ds-digib-webfont.eot?#iefix')
+		format('embedded-opentype'), url('../fonts/ds-digib-webfont.woff2')
+		format('woff2'), url('../fonts/ds-digib-webfont.woff') format('woff'),
+		url('../fonts/ds-digib-webfont.ttf') format('truetype'),
+		url('../fonts/ds-digib-webfont.svg#ds-digitalbold') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}

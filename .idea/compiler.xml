@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="rt-dao" />
+        <module name="rt-dto" />
+        <module name="rt-mag" />
+        <module name="rt-service" />
+        <module name="rt-util" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="rt" target="1.8" />
+      <module name="rt-dao" target="1.8" />
+      <module name="rt-dto" target="1.8" />
+      <module name="rt-mag" target="1.8" />
+      <module name="rt-service" target="1.8" />
+      <module name="rt-util" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

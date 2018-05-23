@@ -1,0 +1,1 @@
+<%@ tag pageEncoding="utf-8"%><%@ taglib prefix="c" uri="http://java.sun.com/jstl/core_rt"%><%@ attribute name="url" type="String" required="true" rtexprvalue="true"%><link href="<c:url value='${url}'/>?v=${__version}" rel="stylesheet" type="text/css" />

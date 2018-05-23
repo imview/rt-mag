@@ -1,0 +1,102 @@
+/* ----------------------------------------
+    Lab specific: scrollUp
+---------------------------------------- */
+.themes {
+	padding: 0;
+	margin: 0;
+	margin-bottom: 20px;
+	float: left;
+	width: 100%;
+}
+
+.themes li {
+	text-align: center;
+	display: block;
+	float: left;
+	width: 22%;
+	margin-left: 4%;
+}
+
+.themes li.first {
+	margin-left: 0;
+}
+
+.themes li a {
+	display: block;
+	padding: 10px;
+	background-color: #444;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	color: #eee;
+	-webkit-transition: all 200ms ease-out;
+	-moz-transition: all 200ms ease-out;
+	-o-transition: all 200ms ease-out;
+	transition: all 200ms ease-out;
+}
+
+.themes li a:hover, .themes li a.active {
+	background-color: #F66169;
+	color: #FAEFDE;
+}
+
+#toggleActive {
+	padding: 10px;
+	width: 100%;
+	text-align: center;
+	display: inline-block;
+	background-color: #444;
+	color: #eee;
+	font-size: 14px;
+	cursor: pointer;
+	-webkit-transition: all 200ms ease-out;
+	-moz-transition: all 200ms ease-out;
+	-o-transition: all 200ms ease-out;
+	transition: all 200ms ease-out;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+}
+
+#toggleActive.active {
+	background-color: #F66169;
+	color: #FAEFDE;
+}
+
+#scrollUp-active {
+	display: none;
+}
+
+/* Tab style */
+#scrollUp {
+	bottom: 0;
+	right: 30px;
+	width: 70px;
+	height: 30px;
+	margin-bottom: -10px;
+	padding: 10px 5px;
+	font: 14px/20px sans-serif;
+	text-align: center;
+	text-decoration: none;
+	text-shadow: 0 1px 0 #fff;
+	color: #828282;
+	-webkit-box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+	-moz-box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+	background-color: #E6E6E6;
+	background-image: -moz-linear-gradient(top, #EBEBEB, #DEDEDE);
+	background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#EBEBEB),
+		to(#DEDEDE));
+	background-image: -webkit-linear-gradient(top, #EBEBEB, #DEDEDE);
+	background-image: -o-linear-gradient(top, #EBEBEB, #DEDEDE);
+	background-image: linear-gradient(to bottom, #EBEBEB, #DEDEDE);
+	background-repeat: repeat-x;
+	-webkit-transition: margin-bottom 150ms linear;
+	-moz-transition: margin-bottom 150ms linear;
+	-o-transition: margin-bottom 150ms linear;
+	transition: margin-bottom 150ms linear;
+}
+
+#scrollUp:hover {
+	margin-bottom: 0;
+}

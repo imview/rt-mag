@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/rt.iml" filepath="$PROJECT_DIR$/rt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rt-dao/rt-dao.iml" filepath="$PROJECT_DIR$/rt-dao/rt-dao.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rt-dto/rt-dto.iml" filepath="$PROJECT_DIR$/rt-dto/rt-dto.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rt-mag/rt-mag.iml" filepath="$PROJECT_DIR$/rt-mag/rt-mag.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rt-service/rt-service.iml" filepath="$PROJECT_DIR$/rt-service/rt-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rt-util/rt-util.iml" filepath="$PROJECT_DIR$/rt-util/rt-util.iml" />
+    </modules>
+  </component>
+</project>

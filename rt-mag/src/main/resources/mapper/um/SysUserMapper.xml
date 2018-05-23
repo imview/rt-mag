@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rt.dao.mapper.um.SysUserMapper">
+
+    <select id="getUserByLoginName" resultType="com.rt.dao.entity.um.SysUser" parameterType="String">
+        <![CDATA[
+            SELECT * FROM sys_user WHERE login_name = #{loginName} AND is_delete = 0
+        ]]>
+    </select>
+
+    <update id="updateUserPwd" parameterType="com.rt.dto.um.SysUserDTO">
+        <![CDATA[
+            UPDATE sys_user SET password = #{password,jdbcType=VARCHAR},last_update_user_id = #{lastUpdateUserId,jdbcType=VARCHAR},
+            last_update_user_name = #{lastUpdateUserName,jdbcType=VARCHAR},last_update_time = CURRENT_TIME
+            WHERE id = #{id,jdbcType=VARCHAR}
+        ]]>
+    </update>
+    
+    <select id="getAllOperationAction" resultType="com.rt.dto.um.SysOperationActionWithLevelDTO">
+        select sp.*,sa.url as actionUrl
+        from sys_operation sp
+        left join sys_operation_action spa on sp.id=spa.operation_id and spa.is_delete=0
+        left join sys_action sa on spa.action_id=sa.id and sa.is_delete=0
+        where sp.enabled=1 and sp.is_delete=0
+        order by sp.level,sp.sequence;
+    </select>
+    
+    <select id="getOperationActionByUserId" resultType="com.rt.dto.um.SysOperationActionWithLevelDTO" parameterType="String">
+        select sp.*,sa.url as actionUrl
+        from sys_user su
+        left join sys_user_role sur on su.id=sur.user_id
+        left join sys_role_operation srp on sur.role_id=srp.role_id
+        -- left join tmpoperationlevel sp on srp.operation_id=sp.id
+         left join sys_operation sp on sp.id = srp.operation_id
+        left join sys_operation_action spa on sp.id=spa.operation_id and spa.is_delete=0
+        left join sys_action sa on spa.action_id=sa.id and sa.is_delete=0
+        where su.is_delete=0 and sur.is_delete=0 and srp.is_delete=0 and sp.is_delete=0
+        and sp.enabled=1 and sp.is_delete=0 and su.status=0
+        <if test="@com.rt.util.StringUtil@isNotBlank(userId)">
+            AND su.id = #{userId}
+        </if>
+        order by sp.level,sp.sequence;
+    </select>
+
+    <update id="updateUserErrorCount" parameterType="com.rt.dto.um.SysUserDTO">
+        <![CDATA[
+            UPDATE sys_user SET error_count = #{errorCount},last_error_time=#{lastErrorTime},
+            last_update_user_id = #{lastUpdateUserId},last_update_user_name = #{lastUpdateUserName},
+            last_update_time = #{lastErrorTime}
+            WHERE id = #{id}
+        ]]>
+    </update>
+
+    <update id="updateUserStatus" parameterType="Map">
+        <![CDATA[
+            UPDATE sys_user SET status = #{status,jdbcType=INTEGER},last_update_user_id = #{lastUpdateUserId,jdbcType=VARCHAR},
+            last_update_user_name = #{lastUpdateUserName,jdbcType=VARCHAR},last_update_time = CURRENT_TIME
+            WHERE id = #{userId,jdbcType=VARCHAR}
+        ]]>
+    </update>
+
+    <!--插入-->
+    <insert id="addUser" parameterType="com.rt.dto.um.SysUserDTO">
+        INSERT INTO sys_user(id,login_name,user_name,password,mobile,email,status,is_super_admin,error_count,
+        last_error_time,is_delete,create_user_id,create_user_name,create_time)VALUES (
+        #{id},#{loginName},#{userName},#{password},#{mobile},#{email},0,0,0,NULL,0,
+        #{createUserId},#{createUserName},CURRENT_TIME)
+    </insert>
+    <!--update-->
+    <update id="updateUser" parameterType="com.rt.dto.um.SysUserDTO">
+        update sys_user SET login_name=#{loginName},user_name=#{userName},password=#{password},mobile=#{mobile},
+        email=#{email},status=#{status},is_super_admin=#{isSuperAdmin},error_count=#{errorCount},
+        last_error_time=#{lastErrorTime} ,is_delete=0,last_update_user_id=#{lastUpdateUserId},
+        last_update_user_name=#{lastUpdateUserName},last_update_time=CURRENT_TIME
+        WHERE id = #{id}
+    </update>
+
+    <!-- 列表分页和查询公共SQL -->
+    <sql id="queryListSql" >
+        <![CDATA[
+            FROM (
+              SELECT * FROM (
+                SELECT *,GROUP_CONCAT(rname) AS role_name,
+                CONCAT(',',CONCAT( GROUP_CONCAT( role_id ), ',' ))AS role_ids
+                FROM (
+                  SELECT
+                    u.id,u.login_name,u.user_name,u.PASSWORD,u.mobile,
+                    u.email,u.STATUS,u.is_super_admin,u.error_count,
+                    u.last_error_time,u.is_delete,u.create_user_id,
+                    u.create_user_name,u.create_time,u.last_update_user_id,
+                    u.last_update_user_name,u.last_update_time,
+                    r1.NAME AS rname,
+                    r1.id AS role_id
+                  FROM
+                  sys_user u
+                  LEFT JOIN sys_user_role ur ON ur.user_id = u.id AND ur.is_delete = 0
+                  LEFT JOIN sys_role r1 ON r1.id = ur.role_id AND r1.is_delete = 0
+                )t
+                WHERE t.is_delete = 0 and (1 = #{isSuperAdmin} or t.id not in(
+                    SELECT  DISTINCT user_id FROM sys_user_role ur2 WHERE ur2.is_delete = 0 and
+                    ur2.role_id NOT IN (
+                        SELECT DISTINCT role_id FROM sys_user_role ur3
+                        WHERE ur3.user_id = #{curUserId}
+                        AND ur3.is_delete = 0
+                         )
+                    )
+                )
+
+        ]]>
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.loginName)">
+            AND t.login_name LIKE CONCAT('%',#{conditions.loginName},'%')
+        </if>
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.userName)">
+            AND t.user_name LIKE CONCAT('%',#{conditions.userName},'%')
+        </if>
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.mobile)">
+            AND t.mobile LIKE CONCAT('%',#{conditions.mobile},'%')
+        </if>
+        <if test="@com.rt.util.StringUtil@isNotBlank(conditions.email)">
+            AND t.email LIKE CONCAT('%',#{conditions.email},'%')
+        </if>
+        <if test="conditions.status != null">
+            AND t.status = #{conditions.status}
+        </if>
+        <![CDATA[
+              and ( 1 = #{isSuperAdmin} or t.is_super_admin = 0)
+             GROUP BY t.id )t1
+        ]]>
+        <if test="conditions.roleId != '-1' and @com.rt.util.StringUtil@isNotBlank(conditions.roleId)">
+            WHERE role_ids LIKE  CONCAT('%,',#{conditions.roleId},'%')
+        </if>
+        <![CDATA[
+
+             ) t2 ORDER BY login_name ASC
+        ]]>
+    </sql>
+
+    <select id="getUserList" parameterType="com.rt.util.Pagination" resultType="com.rt.dto.um.SysUserExtDTO">
+        <![CDATA[
+             SELECT *
+        ]]>
+        <include refid="queryListSql"></include>
+        <![CDATA[
+             limit #{offset},#{pageSize}
+        ]]>
+    </select>
+    <select id="getUserListCount" parameterType="com.rt.util.Pagination" resultType="Integer">
+        <![CDATA[
+             SELECT COUNT(*)
+        ]]>
+        <include refid="queryListSql"></include>
+    </select>
+
+    
+    <select id="selectRoleOperationListByUserId" parameterType="String" resultType="com.rt.dto.um.UserFindRoleOperationDTO">
+        <![CDATA[
+                  SELECT @rownum := @rownum+1 as rows ,
+				  p.id, p.name , p.parent_id, p.sequence ,rp.role_id hasrole
+				  FROM (select @rownum := 0  ) c  ,`sys_operation` p
+				  LEFT JOIN `sys_role_operation` rp ON rp.operation_id = p.id
+				  AND rp.is_delete = 0
+				  AND rp.role_id in (
+				  select r.id from sys_role r
+				  join  sys_user_role ur on ur.role_id = r.id
+				  and user_id   = #{userId}
+				  where r.is_delete= 0 and ur.is_delete = 0
+				  ) WHERE p.enabled = 1  and p.is_delete=0 GROUP BY p.id
+		]]>
+    </select>
+
+    <select id="getUserByUserId" resultType="com.rt.dto.um.SysUserDTO" parameterType="String">
+        <![CDATA[
+                 SELECT * FROM sys_user WHERE id = #{userId} AND is_delete = 0
+		]]>
+    </select>
+
+    <update id="deleteUser" parameterType="Map" >
+          <![CDATA[
+            UPDATE sys_user SET is_delete = 1,last_update_user_id = #{curUserId,jdbcType=VARCHAR},
+            last_update_user_name = #{curUserName,jdbcType=VARCHAR},last_update_time = CURRENT_TIME
+            WHERE id in
+        ]]>
+        <foreach collection = "idList" index = "index" item = "item" open="(" separator="," close=")" >
+            #{item}
+        </foreach>
+    </update>
+
+
+</mapper>
